@@ -16,6 +16,14 @@ import time
 import subprocess
 import shutil
 
+import gobject
+gobject.threads_init()
+
+import pygst
+pygst.require('0.10')
+import gst
+
+
 subprocess.DEVNULL = file(os.devnull, "rw+")
 
 ###############################################################################
@@ -125,8 +133,8 @@ def create_fifo():
 
 
 def launch_gstreamer(fifoname):
-    cmd = ("gst-launch-0.10" +
-        " " +
+
+    cmd = ("" +
         {True:
             # Read the v4l2 input and decode it if it's a mjpeg input
             "v4l2src ! decodebin2 !",
@@ -135,41 +143,41 @@ def launch_gstreamer(fifoname):
         }[args.fake == None] +
         " " +
         # Allow at most 1ms of data to be in the buffer, 2=GST_QUEUE_LEAK_DOWNSTREAM
-        "queue leaky=2 max-size-buffers=5 ! " +
+        "queue name=firstqueue leaky=2 max-size-buffers=5 ! " +
         " " +
         # Convert to 4:3 format by adding borders if needed
         {"4:3":
             # Convert to 4:3 format by adding borders if needed
-            "videoscale add-borders=1 ! video/x-raw-yuv,width=1024,height=768,pixel-aspect-ratio=\(fraction\)1/1 !",
+            "videoscale add-borders=1 ! video/x-raw-yuv,width=1024,height=768,pixel-aspect-ratio=(fraction)1/1 !",
          "16:9":
             # Convert to 16:9 format by adding borders if needed
-            "videoscale add-borders=1 ! video/x-raw-yuv,width=1280,height=720,pixel-aspect-ratio=\(fraction\)1/1 !",
+            "videoscale add-borders=1 ! video/x-raw-yuv,width=1280,height=720,pixel-aspect-ratio=(fraction)1/1 !",
         }[args.aspect] +
         " " +
         "queue ! " +
         " " +
         {"ntsc-4:3": 
             # Convert to 4:3 with non-square pixels
-            "videoscale ! video/x-raw-yuv,width=720,height=480,pixel-aspect-ratio=\(fraction\)10/11 !",
+            "videoscale ! video/x-raw-yuv,width=720,height=480,pixel-aspect-ratio=(fraction)10/11 !",
          "ntsc-16:9": 
             # Convert to 4:3 with non-square pixels
-            "videoscale ! video/x-raw-yuv,width=720,height=480,pixel-aspect-ratio=\(fraction\)40/33 !",
+            "videoscale ! video/x-raw-yuv,width=720,height=480,pixel-aspect-ratio=(fraction)40/33 !",
          "pal-4:3":
             # Convert to 4:3 with non-square pixels
-            "videoscale ! video/x-raw-yuv,width=720,height=576,pixel-aspect-ratio=\(fraction\)59/54 !",
+            "videoscale ! video/x-raw-yuv,width=720,height=576,pixel-aspect-ratio=(fraction)59/54 !",
          "pal-4:3":
             # Convert to 4:3 with non-square pixels
-            "videoscale ! video/x-raw-yuv,width=720,height=576,pixel-aspect-ratio=\(fraction\)118/81 !",
+            "videoscale ! video/x-raw-yuv,width=720,height=576,pixel-aspect-ratio=(fraction)118/81 !",
         }["%s-%s" % (args.format, args.aspect)] +
         " " +
         "queue ! " +
         " " +
         {"ntsc": 
             # Convert the framerate to 30fps
-            "videorate ! video/x-raw-yuv,framerate=\(fraction\)30000/1001 !",
+            "videorate ! video/x-raw-yuv,framerate=(fraction)30000/1001 !",
          "pal":
             # Convert the framerate to 25fps
-            "videorate ! video/x-raw-yuv,framerate=\(fraction\)25/1 !",
+            "videorate ! video/x-raw-yuv,framerate=(fraction)25/1 !",
         }[args.format] +
         " " +
         # Convert to DV format
@@ -180,14 +188,49 @@ def launch_gstreamer(fifoname):
         # Output to the fifo
         "filesink location=" + fifoname)
 
-    cmdargs = {}
     if args.verbose:
-        print "Running the gstreamer conversion command of"
-        print "   ", cmd
-    else:
-        cmdargs["stdout"] = subprocess.DEVNULL
+        print "Using a gstreamer pipeline of", cmd
+    try:
+        pipeline = gst.parse_launch(cmd)
+    except gobject.GError, e:
+        raise OSError('Could not create pipeline: %s' % str(e))
+    
+    def on_message(bus, message):
+        t = message.type
+        print "Message:", message,
+        if t == gst.MESSAGE_STATE_CHANGED:
+            pass
+        elif t == gst.MESSAGE_ERROR:
+            err, debug = message.parse_error()
+            print err, debug,
+        elif t == gst.MESSAGE_EOS:
+            print "EOS!?",
+        else:
+            print '%s: %s:' % (
+                message.src.get_path_string(), message.type.value_nicks[1]),
+            if message.structure:
+                print '    %s' % message.structure.to_string(),
+            else:
+                print '    (no structure)',
+        print
+        return True
 
-    return subprocess.Popen(cmd, shell=True, **cmdargs)
+    bus = pipeline.get_bus()
+    bus.add_signal_watch()
+    watch_id = bus.connect('message', on_message)
+
+    #def queue_message(message):
+    #    print message.type
+    #queue = pipeline.get_by_name('firstqueue')
+    #queue.connect('overrun', queue_message)
+    #queue.connect('running', queue_message)
+    #queue.connect('underrun', queue_message)
+    #queue.connect('pushing', queue_message)
+
+    pipeline.set_state(gst.STATE_PLAYING)
+
+    return pipeline
+
 
 def launch_dvsource(fifoname):
     cmd = "dvsource-file "
@@ -229,31 +272,39 @@ def main():
     fifoname = create_fifo()
     # Launch the sub-commands
     dvsource = launch_dvsource(fifoname)
-    gst = launch_gstreamer(fifoname)
+    pipeline = launch_gstreamer(fifoname)
 
     try:
+        loop = gobject.MainLoop()
+        context = loop.get_context()
+
         while True:
+            while context.iteration(False):
+                continue
+
             if dvsource.poll() != None:
                 raise OSError("dvsource-file command terminated!")
-            if gst.poll() != None:
-                raise OSError("gst-launch command terminated!")
 
             # FIXME: Add some type of monitoring of CPU usage here...
             if args.verbose:
                 print "Commands happily running!"
 
+                print pipeline.get_state()
+
+                late = gst.query_new_latency()
+                print pipeline.query(late),
+                print late.parse_latency()
+
+                buff = gst.query_new_buffering(gst.FORMAT_TIME)
+                print pipeline.query(buff),
+                print buff.parse_buffering_stats()
+
             time.sleep(1.0)
     finally:
+        pipeline.set_state(gst.STATE_NULL)
+
         exitstart = time.time()
 
-        # To not get errors, terminate gst first, then dvsource
-
-        try:
-            if args.verbose:
-                print "Terminating gst-launch"
-            gst.terminate()
-        except Exception, e:
-            print "Error terminating gst-launch", e
         try:
             if args.verbose:
                 print "Terminating dvsource-file"
@@ -262,7 +313,7 @@ def main():
             print "Error terminating dvsource-file", e
 
         while True:
-            if dvsource.poll() != None and gst.poll() != None:
+            if dvsource.poll() != None:
                 break
 
             if args.verbose:
@@ -272,11 +323,6 @@ def main():
             if time.time() - exitstart > args.timeout:
                 print "Timeout waiting for dvsource / gst-launch",
                 print "to terminate, killing."
-
-		try:
-		    gst.kill()
-		except Exception, e:
-		    print "Error killing gst-launch", e
 
 		try:
 		    dvsource.kill()
