@@ -134,7 +134,8 @@ def launch_gstreamer(fifoname):
           "videotestsrc is-live=true pattern=%s !" % fake_types[args.fake],
         }[args.fake == None] +
         " " +
-        # Allow at most 1ms of data to be in the buffer, 2=GST_QUEUE_LEAK_DOWNSTREAM
+        # Allow at most 1 buffer of data,
+        #   leaky=(2): downstream - Leaky on downstream (old buffers)
         "queue leaky=2 max-size-buffers=1 ! " +
         " " +
         # Convert to 4:3 format by adding borders if needed
@@ -162,7 +163,9 @@ def launch_gstreamer(fifoname):
             "videoscale ! video/x-raw-yuv,width=720,height=576,pixel-aspect-ratio=\(fraction\)118/81 !",
         }["%s-%s" % (args.format, args.aspect)] +
         " " +
-        "queue max-size-buffers=1 ! " +
+        # Allow at most 1 buffer of data,
+        #   leaky=(2): downstream - Leaky on downstream (old buffers)
+        "queue leaky=2 max-size-buffers=1 ! " +
         " " +
         {"ntsc": 
             # Convert the framerate to 30fps
@@ -175,10 +178,11 @@ def launch_gstreamer(fifoname):
         # Convert to DV format
         "ffmpegcolorspace ! ffenc_dvvideo ! ffmux_dv !" +
         " " +
-        "queue max-size-buffers=1 ! " +
+        "queue ! " +
         " " +
-        # Output to the fifo
-        "filesink location=" + fifoname)
+        # Output to the fifo, 
+        #   buffer-size=64 bytes
+        "filesink buffer-size=64 location=" + fifoname)
 
     cmdargs = {}
     if args.verbose:
