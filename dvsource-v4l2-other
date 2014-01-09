@@ -167,7 +167,7 @@ def launch_gstreamer():
         }[args.fake == None] +
         " " +
         # Allow at most 1ms of data to be in the buffer, 2=GST_QUEUE_LEAK_DOWNSTREAM
-        "queue leaky=2 max-size-buffers=5 ! " +
+        "queue leaky=downstream max-size-buffers=1 ! " +
         " " +
         # Convert to 4:3 format by adding borders if needed
         {"4:3":
@@ -177,8 +177,6 @@ def launch_gstreamer():
             # Convert to 16:9 format by adding borders if needed
             "videoscale add-borders=1 ! video/x-raw-yuv,width=1280,height=720,pixel-aspect-ratio=\(fraction\)1/1 !",
         }[args.aspect] +
-        " " +
-        "queue ! " +
         " " +
         {"ntsc-4:3": 
             # Convert to 4:3 with non-square pixels
@@ -194,8 +192,6 @@ def launch_gstreamer():
             "videoscale ! video/x-raw-yuv,width=720,height=576,pixel-aspect-ratio=\(fraction\)118/81 !",
         }["%s-%s" % (args.format, args.aspect)] +
         " " +
-        "queue ! " +
-        " " +
         {"ntsc": 
             # Convert the framerate to 30fps
             "videorate ! video/x-raw-yuv,framerate=\(fraction\)30000/1001 !",
@@ -203,6 +199,8 @@ def launch_gstreamer():
             # Convert the framerate to 25fps
             "videorate ! video/x-raw-yuv,framerate=\(fraction\)25/1 !",
         }[args.format] +
+        " " +
+        "queue leaky=downstream max-size-buffers=1 ! " +
         " " +
         # Convert to DV format
         "ffmpegcolorspace ! ffenc_dvvideo ! ffmux_dv !" +
