@@ -18,6 +18,7 @@ import shutil
 
 subprocess.DEVNULL = file(os.devnull, "rw+")
 
+
 ###############################################################################
 # Argument parsing
 ###############################################################################
@@ -109,22 +110,8 @@ def check_gst_module(name):
 ###############################################################################
 # Code to which actually does the work
 ###############################################################################
-def create_fifo():
-    tmpdir = tempfile.mkdtemp()
-    def cleanup_fifo():
-      def print_error(e):
-         print e
-      shutil.rmtree(tmpdir, False, print_error)
-    atexit.register(cleanup_fifo)
 
-    fifoname = os.path.join(tmpdir, 'fifo.dv')
-    if args.verbose:
-        print "Making fifo at ", fifoname
-    os.mkfifo(fifoname)
-    return fifoname
-
-
-def launch_gstreamer(fifoname):
+def launch_gstreamer():
     cmd = ("gst-launch-0.10" +
         " " +
         {True:
@@ -175,31 +162,12 @@ def launch_gstreamer(fifoname):
         # Convert to DV format
         "ffmpegcolorspace ! ffenc_dvvideo ! ffmux_dv !" +
         " " +
-        "queue ! " +
-        " " +
         # Output to the fifo
-        "filesink location=" + fifoname)
+        "dvswitchsink host=%s port=%s" % (args.host, args.port))
 
     cmdargs = {}
     if args.verbose:
         print "Running the gstreamer conversion command of"
-        print "   ", cmd
-    else:
-        cmdargs["stdout"] = subprocess.DEVNULL
-
-    return subprocess.Popen(cmd, shell=True, **cmdargs)
-
-def launch_dvsource(fifoname):
-    cmd = "dvsource-file "
-    if args.host:
-       cmd += "--host " + args.host + " "
-    if args.port:
-       cmd += "--port " + args.port + " "
-    cmd += fifoname
-
-    cmdargs = {}
-    if args.verbose:
-        print "Running the dvsource-file command of"
         print "   ", cmd
     else:
         cmdargs["stdout"] = subprocess.DEVNULL
@@ -224,23 +192,19 @@ def main():
     check_gst_module("ffenc_dvvideo")
     check_gst_module("ffmux_dv")
     check_gst_module("filesink")
+    check_gst_module("dvswitchsink")
 
-    # Create the fifo
-    fifoname = create_fifo()
     # Launch the sub-commands
-    dvsource = launch_dvsource(fifoname)
-    gst = launch_gstreamer(fifoname)
+    gst = launch_gstreamer()
 
     try:
         while True:
-            if dvsource.poll() != None:
-                raise OSError("dvsource-file command terminated!")
             if gst.poll() != None:
                 raise OSError("gst-launch command terminated!")
 
             # FIXME: Add some type of monitoring of CPU usage here...
             if args.verbose:
-                print "Commands happily running!"
+                print "gst-launch happily running!"
 
             time.sleep(1.0)
     finally:
@@ -254,34 +218,23 @@ def main():
             gst.terminate()
         except Exception, e:
             print "Error terminating gst-launch", e
-        try:
-            if args.verbose:
-                print "Terminating dvsource-file"
-            dvsource.terminate()
-        except Exception, e:
-            print "Error terminating dvsource-file", e
 
         while True:
-            if dvsource.poll() != None and gst.poll() != None:
+            if gst.poll() != None:
                 break
 
             if args.verbose:
-                print "Waiting for dvsource / gst-launch to terminate"
+                print "Waiting for gst-launch to terminate"
             time.sleep(1)
 
             if time.time() - exitstart > args.timeout:
-                print "Timeout waiting for dvsource / gst-launch",
+                print "Timeout waiting for gst-launch",
                 print "to terminate, killing."
 
 		try:
 		    gst.kill()
 		except Exception, e:
 		    print "Error killing gst-launch", e
-
-		try:
-		    dvsource.kill()
-		except Exception, e:
-		    print "Error killing dvsource-file", e
 
 args = None
 if __name__ == "__main__":
