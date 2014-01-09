@@ -71,6 +71,9 @@ parser.add_argument(
     "-v", "--verbose", action="store_true",
     help="Increase output verbosity")
 
+parser.add_argument(
+    "-x", "--display", action="store_true",
+    help="Display the incoming video locally.")
 
 ###############################################################################
 # dvswitch arguments and .dvswitchrc parsing
@@ -200,13 +203,18 @@ def launch_gstreamer():
             "videorate ! video/x-raw-yuv,framerate=\(fraction\)25/1 !",
         }[args.format] +
         " " +
+        ["", "tee name=t ! "][args.display] +
+        " " +
         "queue leaky=downstream max-size-buffers=1 ! " +
         " " +
         # Convert to DV format
         "ffmpegcolorspace ! ffenc_dvvideo ! ffmux_dv !" +
         " " +
         # Output to the fifo
-        "dvswitchsink host=%s port=%s" % (args.host, args.port))
+        "dvswitchsink host=%s port=%s" % (args.host, args.port) +
+        " " +
+        ["", "t.! queue max-size-buffers=1 leaky=downstream ! ffmpegcolorspace ! xvimagesink"][args.display]
+        )
 
     cmdargs = {}
     if args.verbose:
