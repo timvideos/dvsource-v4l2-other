@@ -238,8 +238,6 @@ def launch_gstreamer():
 # Main function
 ###############################################################################
 def main():
-    # Check that dvsource-file is installed
-    check_command("dvsource-file")
     # Check that gstreamer stuff is installed
     check_command("gst-inspect-0.10")
     check_command("gst-launch-0.10")
