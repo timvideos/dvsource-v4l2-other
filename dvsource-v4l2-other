@@ -71,19 +71,64 @@ parser.add_argument(
     "-v", "--verbose", action="store_true",
     help="Increase output verbosity")
 
+
+###############################################################################
+# dvswitch arguments and .dvswitchrc parsing
+###############################################################################
+
+def parse_dvswitchrc(configfile):
+    r = {}
+    for line in file(configfile, "r").readlines():
+        cmt = line.find('#')
+        if cmt > 0:
+            line = line[cmt:]
+
+        line = line.strip()
+        if not line:
+            continue
+
+        key, value = line.split('=', 1)
+        r[key] = value
+    return r
+
+
+def get_dvswitchrc():
+    import shlex
+    from os import path
+    configs = [path.expanduser("~"), ".", "/etc"]
+
+    actual_config = {}
+    for dirname in configs:
+        configfile = path.join(dirname, ".dvswitchrc")
+        if path.exists(configfile):
+            actual_config.update(parse_dvswitchrc(configfile))
+
+    if actual_config.get("MIXER_HOST", None) == "0.0.0.0":
+        actual_config["MIXER_HOST"] = "127.0.0.1"
+
+    return actual_config
+
+config = get_dvswitchrc()
 # dvswitch arguments
 parser.add_argument(
     "-h", "--host", 
     help=(""
         "Specify the network address on which DVswitch is listening. The host"
-        " address may be specified by name or as an IPv4 or IPv6 literal.")
+        " address may be specified by name or as an IPv4 or IPv6 literal."),
+    default = config.get("MIXER_HOST", None),
+    required = config.get("MIXER_HOST", None) == None,
     )
 parser.add_argument(
     "-p", "--port",
     help=(""
         "Specify the network address on which DVswitch is listening. The host"
-        " address may be specified by name or as an IPv4 or IPv6 literal.")
+        " address may be specified by name or as an IPv4 or IPv6 literal."),
+    default = config.get("MIXER_PORT", None),
+    required = config.get("MIXER_PORT", None) == None,
     )
+
+###############################################################################
+
 parser.add_argument(
     "--help", action='help',
     help="show this help message and exit")
