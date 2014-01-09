@@ -1,7 +1,14 @@
-dvsource-v4l2-other
-===================
+# dvsource-v4l2-other
 
 Video4Linux2 source for DVswitch which supports any device.
+
+## Dependencies
+
+ * gstreamer-0.10
+ * gst-plugins-dvswitch -- https://github.com/timvideos/gst-plugins-dvswitch
+
+
+# Help
 
 ```
 usage: dvsource-v4l2-other [-d DEVICE] [-f {ntsc,pal}] [-a {4:3,16:9}]
