@@ -27,6 +27,9 @@ parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument(
     "-d", "--device", default="/dev/video0",
     help="Video4Linux device to read the input from.")
+parser.add_argument(
+    "-c", "--caps", default="",
+    help="gstreamer caps to force v4l2src device to use.")
 
 parser.add_argument(
     "-f", "--format", default="ntsc", choices=["ntsc", "pal"],
@@ -160,11 +163,16 @@ def check_gst_module(name):
 ###############################################################################
 
 def launch_gstreamer():
+    if args.caps:
+        args.caps += " ! "
+
     cmd = ("gst-launch-0.10" +
         " " +
         {True:
             # Read the v4l2 input and decode it if it's a mjpeg input
-            "v4l2src ! decodebin2 !",
+            "v4l2src ! " +
+            args.caps +
+            "decodebin2 ! ",
          False:
           "videotestsrc is-live=true pattern=%s !" % fake_types[args.fake],
         }[args.fake == None] +
