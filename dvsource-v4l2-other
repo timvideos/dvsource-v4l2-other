@@ -42,8 +42,8 @@ parser.add_argument(
     help="How long to wait when terminating subprocess before killing.")
 
 parser.add_argument(
-    "-r", "--rate", default="48000", choices=["48000", "44100"],
-    help="Specify the sample rate, in Hz. (32000, 12bit audio is not supported.)")
+    "-r", "--rate", default="48000", choices=["48000", "44100", "32000"],
+    help="Specify the sample rate, in Hz. **Only 48000kHz is supported.**")
 
 
 fake_types = {
@@ -275,6 +275,9 @@ def main():
     check_gst_module("ffmux_dv", "gstreamer0.10-ffmpeg")
     check_gst_module("filesink")
     check_gst_module("dvswitchsink", "gstreamer0.10-dvswitch")
+
+    if args.rate != "48000":
+        raise SystemError("Only a --rate of 48000 is supported.")
 
     # Launch the sub-commands
     gst = launch_gstreamer()
