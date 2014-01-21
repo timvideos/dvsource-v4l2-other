@@ -292,6 +292,8 @@ def main():
                 print "gst-launch happily running!"
 
             time.sleep(1.0)
+    except KeyboardInterrupt, e:
+        pass
     finally:
         exitstart = time.time()
 
