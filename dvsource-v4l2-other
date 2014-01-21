@@ -218,9 +218,10 @@ def launch_gstreamer():
         # Convert to DV format
         "ffmpegcolorspace ! ffenc_dvvideo ! ffmux_dv !" +
         " " +
-        # Output to the fifo
+        # Output to dvswitch
         "dvswitchsink host=%s port=%s" % (args.host, args.port) +
         " " +
+        # Display the output locally if requested
         ["", "t.! queue max-size-buffers=1 leaky=downstream ! ffmpegcolorspace ! xvimagesink"][args.display]
         )
 
