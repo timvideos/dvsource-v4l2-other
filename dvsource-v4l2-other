@@ -41,6 +41,11 @@ parser.add_argument(
     "-t", "--timeout", type=int, default=10,
     help="How long to wait when terminating subprocess before killing.")
 
+parser.add_argument(
+    "-r", "--rate", default="48000", choices=["48000", "44100"],
+    help="Specify the sample rate, in Hz. (32000, 12bit audio is not supported.)")
+
+
 fake_types = {
     None: 0,
     "": 0,
@@ -172,6 +177,8 @@ def launch_gstreamer():
 
     cmd = ("gst-launch-0.10" +
         " " +
+        # Video Pipeline --------------------
+        # -----------------------------------
         {True:
             # Read the v4l2 input and decode it if it's a mjpeg input
             "v4l2src ! " +
@@ -220,13 +227,26 @@ def launch_gstreamer():
         "queue leaky=downstream max-size-buffers=1 ! " +
         " " +
         # Convert to DV format
-        "ffmpegcolorspace ! ffenc_dvvideo ! ffmux_dv !" +
+        "ffmpegcolorspace ! ffenc_dvvideo ! ffmux_dv name=dvmux !" +
         " " +
         # Output to dvswitch
         "dvswitchsink host=%s port=%s" % (args.host, args.port) +
         " " +
-        # Display the output locally if requested
-        ["", "t.! queue max-size-buffers=1 leaky=downstream ! ffmpegcolorspace ! xvimagesink"][args.display]
+        # -----------------------------------
+        # Audio Pipeline --------------------
+        # -----------------------------------
+        " " +
+        # Generate a dummy audio signal
+        # 2 channels, 16-bit Linear PCM at 48 kHz
+        # 2 channels, 16-bit Linear PCM at 44.1 kHz
+        # 4 channels, 12-bit nonlinear PCM channels at 32 kHz (Not supported - gstreamer doesn't support 12-bit nonlinear)
+        "audiotestsrc is-live=true wave=sine freq=200 ! audio/x-raw-int,channels=2,rate=%s,depth=16 ! queue ! dvmux." % args.rate +
+        " " +
+        # -----------------------------------
+        # Local Display ---------------------
+        # -----------------------------------
+        " " +
+        ["", "t. ! queue max-size-buffers=1 leaky=downstream ! ffmpegcolorspace ! xvimagesink"][args.display]
         )
 
     cmdargs = {}
