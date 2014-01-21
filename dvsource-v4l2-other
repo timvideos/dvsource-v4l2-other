@@ -32,8 +32,8 @@ parser.add_argument(
     help="gstreamer caps to force v4l2src device to use.")
 
 parser.add_argument(
-    "-f", "--format", default="ntsc", choices=["ntsc", "pal"],
-    help="Choose DV output format.")
+    "-s", "--system", default="pal", choices=["ntsc", "pal"],
+    help="Specify the video system to use.This must match the system used by DVswitch.")
 parser.add_argument(
     "-a", "--aspect", default="4:3", choices=["4:3", "16:9"],
     help="Choose DV output aspect ratio.")
@@ -201,7 +201,7 @@ def launch_gstreamer():
          "pal-4:3":
             # Convert to 4:3 with non-square pixels
             "videoscale ! video/x-raw-yuv,width=720,height=576,pixel-aspect-ratio=\(fraction\)118/81 !",
-        }["%s-%s" % (args.format, args.aspect)] +
+        }["%s-%s" % (args.system, args.aspect)] +
         " " +
         {"ntsc": 
             # Convert the framerate to 30fps
@@ -209,7 +209,7 @@ def launch_gstreamer():
          "pal":
             # Convert the framerate to 25fps
             "videorate ! video/x-raw-yuv,framerate=\(fraction\)25/1 !",
-        }[args.format] +
+        }[args.system] +
         " " +
         ["", "tee name=t ! "][args.display] +
         " " +
