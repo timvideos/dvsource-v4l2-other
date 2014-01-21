@@ -142,20 +142,24 @@ parser.add_argument(
 ###############################################################################
 # Code to check dependencies
 ###############################################################################
-def check_command(name):
+def check_command(name, package=None):
     try:
         output = subprocess.check_output(["which", name])
         if args.verbose:
           print "Using", name, "found at", output.strip()
     except subprocess.CalledProcessError, e:
         print "Unable to find required command:", name
+        if package:
+            print "Please try 'sudo apt-get install %s'" % package
         raise
 
-def check_gst_module(name):
+def check_gst_module(name, package=None):
     try:
         subprocess.check_call(["gst-inspect-0.10", name], stdout=subprocess.DEVNULL)
     except subprocess.CalledProcessError, e:
         print "Unable to find required gstreamer module", name
+        if package:
+            print "Please try 'sudo apt-get install %s'" % package
         raise
 
 ###############################################################################
@@ -246,11 +250,11 @@ def main():
     check_gst_module("decodebin2")
     check_gst_module("videoscale")
     check_gst_module("videorate")
-    check_gst_module("ffmpegcolorspace")
-    check_gst_module("ffenc_dvvideo")
-    check_gst_module("ffmux_dv")
+    check_gst_module("ffmpegcolorspace", "gstreamer0.10-ffmpeg")
+    check_gst_module("ffenc_dvvideo", "gstreamer0.10-ffmpeg")
+    check_gst_module("ffmux_dv", "gstreamer0.10-ffmpeg")
     check_gst_module("filesink")
-    check_gst_module("dvswitchsink")
+    check_gst_module("dvswitchsink", "gstreamer0.10-dvswitch")
 
     # Launch the sub-commands
     gst = launch_gstreamer()
