@@ -263,19 +263,31 @@ def launch_gstreamer():
 # Main function
 ###############################################################################
 def main():
-    # Check that gstreamer stuff is installed
-    check_command("gst-inspect-0.10")
-    check_command("gst-launch-0.10")
-    check_gst_module("v4l2src")
-    check_gst_module("decodebin2")
-    check_gst_module("videoscale")
-    check_gst_module("videorate")
+    # Check that gstreamer cmd line tools are installed
+    check_command("gst-inspect-0.10", "gstreamer0.10-tools")
+    check_command("gst-launch-0.10", "gstreamer0.10-tools")
+    # Check if the gstreamer modules are installed
+    check_gst_module("v4l2src", "gstreamer0.10-plugins-good")
+    check_gst_module("decodebin2", "gstreamer0.10-plugins-base")
+
+    check_gst_module("videotestsrc", "gstreamer0.10-plugins-base")
+
+    check_gst_module("videoscale", "gstreamer0.10-plugins-base")
+    check_gst_module("videorate", "gstreamer0.10-plugins-base")
+
+    check_gst_module("queue", "libgstreamer0.10-0")
+    check_gst_module("tee", "libgstreamer0.10-0")
+
     check_gst_module("ffmpegcolorspace", "gstreamer0.10-ffmpeg")
     check_gst_module("ffenc_dvvideo", "gstreamer0.10-ffmpeg")
     check_gst_module("ffmux_dv", "gstreamer0.10-ffmpeg")
-    check_gst_module("filesink")
     check_gst_module("dvswitchsink", "gstreamer0.10-dvswitch")
 
+    check_gst_module("audiotestsrc", "gstreamer0.10-plugins-base")
+
+    check_gst_module("xvimagesink", "gstreamer0.10-plugins-base")
+
+    # Check the input arguments make sense.
     if args.rate != "48000":
         raise SystemError("Only a --rate of 48000 is supported.")
 

@@ -4,11 +4,51 @@ Video4Linux2 source for DVswitch which supports any device.
 
 ## Dependencies
 
- * gstreamer-0.10
+ * gstreamer-0.10 (including, base, good and ffmpeg plugins)
  * gst-plugins-dvswitch -- https://github.com/timvideos/gst-plugins-dvswitch
 
+### Installing on Debian and Ubuntu
 
-# Help
+#### Dependencies
+The following packages are needed;
+
+ * gstreamer0.10-tools
+ * gstreamer0.10-plugins-good
+ * gstreamer0.10-plugins-base
+ * gstreamer0.10-ffmpeg
+ * libgstreamer0.10-0
+ * gstreamer0.10-dvswitch
+   * Download from https://github.com/timvideos/gst-plugins-dvswitch
+
+##### Installing the dependencies
+```
+sudo apt-get install \
+  gstreamer0.10-tools \
+  gstreamer0.10-plugins-good \
+  gstreamer0.10-plugins-base \
+  gstreamer0.10-ffmpeg \
+  libgstreamer0.10-0
+```
+
+##### Installing the gstreamer dvswitch plugin
+
+If your distro has gstreamer0.10-dvswitch
+```
+sudo apt-get install \
+  gstreamer0.10-dvswitch
+```
+
+Else, build the gstreamer0.10-dvswitch package yourself
+```
+git clone git://github.com/timvideos/gst-plugins-dvswitch.git
+cd gst-plugins-dvswitch
+dpkg-checkbuilddeps
+# Install any missing build dependencies
+dpkg-buildpackage -b
+dpkg --install ../gstreamer0.10-dvswitch*.deb
+```
+
+# Usage
 
 ```
 usage: dvsource-v4l2-other [-d DEVICE] [-c CAPS] [-f {ntsc,pal}]
