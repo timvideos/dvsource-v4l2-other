@@ -1,6 +1,13 @@
 # dvsource-v4l2-other
 
-Video4Linux2 source for DVswitch which supports any device.
+A source for DVswitch which supports any Video4Linux 2 device.
+
+## Quick Start
+
+```
+dvswitch --host=localhost --port=2000 &
+./dvsource-v4l2-other --device=/dev/video0 --host=localhost --port=2000
+```
 
 ## Dependencies
 
