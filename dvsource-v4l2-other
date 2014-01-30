@@ -297,8 +297,6 @@ def main():
     finally:
         exitstart = time.time()
 
-        # To not get errors, terminate gst first, then dvsource
-
         try:
             if args.verbose:
                 print "Terminating gst-launch"
@@ -322,6 +320,7 @@ def main():
 		    gst.kill()
 		except Exception, e:
 		    print "Error killing gst-launch", e
+
 
 args = None
 if __name__ == "__main__":
