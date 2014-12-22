@@ -11,7 +11,7 @@ dvswitch --host=localhost --port=2000 &
 
 ## Dependencies
 
- * gstreamer-0.10 (including, base, good and ffmpeg plugins)
+ * gstreamer-1.2.4 (including, base, good and libav plugins)
  * gst-plugins-dvswitch -- https://github.com/timvideos/gst-plugins-dvswitch
 
 ### Installing on Debian and Ubuntu
@@ -19,40 +19,46 @@ dvswitch --host=localhost --port=2000 &
 #### Dependencies
 The following packages are needed;
 
- * gstreamer0.10-tools
- * gstreamer0.10-plugins-good
- * gstreamer0.10-plugins-base
- * gstreamer0.10-ffmpeg
- * libgstreamer0.10-0
- * gstreamer0.10-dvswitch
+ * gstreamer1.0-tools
+ * gstreamer1.0-plugins-good
+ * gstreamer1.0-plugins-base
+ * gstreamer1.0-libav
+ * libgstreamer1.0-0
+ * gstreamer1.0-dvswitch
    * Download from https://github.com/timvideos/gst-plugins-dvswitch
 
 ##### Installing the dependencies
 ```
 sudo apt-get install \
-  gstreamer0.10-tools \
-  gstreamer0.10-plugins-good \
-  gstreamer0.10-plugins-base \
-  gstreamer0.10-ffmpeg \
-  libgstreamer0.10-0
+  gstreamer1.0-tools \
+  gstreamer1.0-plugins-good \
+  gstreamer1.0-plugins-base \
+  gstreamer1.0-libav \
+  libgstreamer1.0-0
 ```
 
 ##### Installing the gstreamer dvswitch plugin
 
-If your distro has gstreamer0.10-dvswitch
+If your distro has gstreamer1.0-dvswitch
 ```
-sudo apt-get install \
-  gstreamer0.10-dvswitch
+sudo apt-get install gstreamer1.0-dvswitch
 ```
 
-Else, build the gstreamer0.10-dvswitch package yourself
+Else, install from the ppa
+```
+sudo add-apt-repository ppa:aps-sids/ppa
+sudo apt-get update
+sudo apt-get install gstreamer1.0-dvswitch
+```
+
+Else, build the gstreamer1.0-dvswitch package yourself
 ```
 git clone git://github.com/timvideos/gst-plugins-dvswitch.git
 cd gst-plugins-dvswitch
 dpkg-checkbuilddeps
 # Install any missing build dependencies
 dpkg-buildpackage -b
-dpkg --install ../gstreamer0.10-dvswitch*.deb
+dpkg --install ../gstreamer1.0-dvswitch*.deb
 ```
 
 # Usage
