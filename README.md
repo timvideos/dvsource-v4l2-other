@@ -99,15 +99,6 @@ optional arguments:
 ```
 
 
-INSTALL:
-```
-sudo apt-add-repository ppa:gstreamer-developers
-sudo apt-get update
-sudo apt-get install gstreamer0.10-ffmpeg
-```
+## TODO
 
-TODO:
-support for ~/.dvswitchrc 
-
-NOTES:
- gst-ffmpeg (for 0.10), in 1.0 it's called gst-libav and avenc_dvvideo
+ - [ ] Support for ~/.dvswitchrc
