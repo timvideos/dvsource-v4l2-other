@@ -175,7 +175,7 @@ def launch_gstreamer():
     if args.caps:
         args.caps += " ! "
 
-    cmd = ("gst-launch-1.0" +
+    cmd = ("gst-launch-1.0 -e" +
         " " +
         # Video Pipeline --------------------
         # -----------------------------------
@@ -185,7 +185,7 @@ def launch_gstreamer():
             args.caps +
             "decodebin ! ",
          False:
-          "videotestsrc is-live=true pattern=%s !" % fake_types[args.fake],
+          "videotestsrc is-live=true pattern=%s ! " % fake_types[args.fake],
         }[args.fake == None] +
         " " +
         # Allow at most 1ms of data to be in the buffer, 2=GST_QUEUE_LEAK_DOWNSTREAM
@@ -230,7 +230,8 @@ def launch_gstreamer():
         "videoconvert ! avenc_dvvideo ! avmux_dv name=dvmux !" +
         " " +
         # Output to dvswitch
-        "dvswitchsink host=%s port=%s" % (args.host, args.port) +
+        #"dvswitchsink host=%s port=%s" % (args.host, args.port) +
+        "filesink location=file://tmp/output.dv " + 
         " " +
         # -----------------------------------
         # Audio Pipeline --------------------
@@ -281,7 +282,7 @@ def main():
     check_gst_module("videoconvert", "gstreamer1.0-ffmpeg")
     check_gst_module("avenc_dvvideo", "gstreamer1.0-ffmpeg")
     check_gst_module("avmux_dv", "gstreamer1.0-ffmpeg")
-    check_gst_module("dvswitchsink", "gstreamer1.0-dvswitch")
+#    check_gst_module("dvswitchsink", "gstreamer1.0-dvswitch")
 
     check_gst_module("audiotestsrc", "gstreamer1.0-plugins-base")
 
