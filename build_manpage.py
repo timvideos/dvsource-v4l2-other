@@ -35,7 +35,6 @@ class build_manpage(Command):
         except ImportError, err:
             raise
         self._parser.formatter = ManPageFormatter()
-        self._parser.formatter.set_parser(self._parser)
         self.announce('Writing man page %s' % self.output)
         self._today = datetime.date.today()
 
@@ -54,7 +53,7 @@ class build_manpage(Command):
         else:
             name = self._markup(appname)
         ret.append('.SH NAME\n%s\n' % name)
-        synopsis = self._parser.get_usage()
+        synopsis = self._parser.format_usage()
         if synopsis:
             synopsis = synopsis.replace('%s ' % appname, '')
             ret.append('.SH SYNOPSIS\n.B %s\n%s\n' % (self._markup(appname),
@@ -66,7 +65,7 @@ class build_manpage(Command):
 
     def _write_options(self):
         ret = ['.SH OPTIONS\n']
-        ret.append(self._parser.format_option_help())
+        ret.append(self._parser.format_help())
         return ''.join(ret)
 
     def _write_footer(self):

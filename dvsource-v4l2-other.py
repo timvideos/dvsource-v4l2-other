@@ -334,6 +334,9 @@ def main():
 		    print "Error killing gst-launch", e
 
 
+def get_parser():
+    return parser
+
 args = None
 if __name__ == "__main__":
     args = parser.parse_args()
