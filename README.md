@@ -98,6 +98,13 @@ optional arguments:
   --help                show this help message and exit
 ```
 
+### Build man page
+
+Build the man page from argparse arguments using following command.
+
+```
+$ python setup.py build_manpage --output=FILENAME --parser=dvsource-v4l2-other:get_parser
+```
 
 ## TODO
 
