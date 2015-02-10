@@ -160,7 +160,7 @@ def check_command(name, package=None):
 
 def check_gst_module(name, package=None):
     try:
-        subprocess.check_call(["gst-inspect-0.10", name], stdout=subprocess.DEVNULL)
+        subprocess.check_call(["gst-inspect-1.0", name], stdout=subprocess.DEVNULL)
     except subprocess.CalledProcessError, e:
         print "Unable to find required gstreamer module", name
         if package:
@@ -175,7 +175,7 @@ def launch_gstreamer():
     if args.caps:
         args.caps += " ! "
 
-    cmd = ("gst-launch-0.10" +
+    cmd = ("gst-launch-1.0" +
         " " +
         # Video Pipeline --------------------
         # -----------------------------------
@@ -183,7 +183,7 @@ def launch_gstreamer():
             # Read the v4l2 input and decode it if it's a mjpeg input
             "v4l2src ! " +
             args.caps +
-            "decodebin2 ! ",
+            "decodebin ! ",
          False:
           "videotestsrc is-live=true pattern=%s !" % fake_types[args.fake],
         }[args.fake == None] +
@@ -194,32 +194,32 @@ def launch_gstreamer():
         # Convert to 4:3 format by adding borders if needed
         {"4:3":
             # Convert to 4:3 format by adding borders if needed
-            "videoscale add-borders=1 ! video/x-raw-yuv,width=1024,height=768,pixel-aspect-ratio=\(fraction\)1/1 !",
+            "videoscale add-borders=1 ! video/x-raw,width=1024,height=768,pixel-aspect-ratio=\(fraction\)1/1 !",
          "16:9":
             # Convert to 16:9 format by adding borders if needed
-            "videoscale add-borders=1 ! video/x-raw-yuv,width=1280,height=720,pixel-aspect-ratio=\(fraction\)1/1 !",
+            "videoscale add-borders=1 ! video/x-raw,width=1280,height=720,pixel-aspect-ratio=\(fraction\)1/1 !",
         }[args.aspect] +
         " " +
         {"ntsc-4:3": 
             # Convert to 4:3 with non-square pixels
-            "videoscale ! video/x-raw-yuv,width=720,height=480,pixel-aspect-ratio=\(fraction\)10/11 !",
+            "videoscale ! video/x-raw,width=720,height=480,pixel-aspect-ratio=\(fraction\)10/11 !",
          "ntsc-16:9": 
             # Convert to 4:3 with non-square pixels
-            "videoscale ! video/x-raw-yuv,width=720,height=480,pixel-aspect-ratio=\(fraction\)40/33 !",
+            "videoscale ! video/x-raw,width=720,height=480,pixel-aspect-ratio=\(fraction\)40/33 !",
          "pal-4:3":
             # Convert to 4:3 with non-square pixels
-            "videoscale ! video/x-raw-yuv,width=720,height=576,pixel-aspect-ratio=\(fraction\)59/54 !",
+            "videoscale ! video/x-raw,width=720,height=576,pixel-aspect-ratio=\(fraction\)59/54 !",
          "pal-4:3":
             # Convert to 4:3 with non-square pixels
-            "videoscale ! video/x-raw-yuv,width=720,height=576,pixel-aspect-ratio=\(fraction\)118/81 !",
+            "videoscale ! video/x-raw,width=720,height=576,pixel-aspect-ratio=\(fraction\)118/81 !",
         }["%s-%s" % (args.system, args.aspect)] +
         " " +
         {"ntsc": 
             # Convert the framerate to 30fps
-            "videorate ! video/x-raw-yuv,framerate=\(fraction\)30000/1001 !",
+            "videorate ! video/x-raw,framerate=\(fraction\)30000/1001 !",
          "pal":
             # Convert the framerate to 25fps
-            "videorate ! video/x-raw-yuv,framerate=\(fraction\)25/1 !",
+            "videorate ! video/x-raw,framerate=\(fraction\)25/1 !",
         }[args.system] +
         " " +
         ["", "tee name=t ! "][args.display] +
@@ -227,7 +227,7 @@ def launch_gstreamer():
         "queue leaky=downstream max-size-buffers=1 ! " +
         " " +
         # Convert to DV format
-        "ffmpegcolorspace ! ffenc_dvvideo ! ffmux_dv name=dvmux !" +
+        "videoconvert ! avenc_dvvideo ! avmux_dv name=dvmux !" +
         " " +
         # Output to dvswitch
         "dvswitchsink host=%s port=%s" % (args.host, args.port) +
@@ -240,13 +240,13 @@ def launch_gstreamer():
         # 2 channels, 16-bit Linear PCM at 48 kHz
         # 2 channels, 16-bit Linear PCM at 44.1 kHz
         # 4 channels, 12-bit nonlinear PCM channels at 32 kHz (Not supported - gstreamer doesn't support 12-bit nonlinear)
-        "audiotestsrc is-live=true wave=sine freq=200 ! audio/x-raw-int,channels=2,rate=%s,depth=16 ! queue ! dvmux." % args.rate +
+        "audiotestsrc is-live=true wave=sine freq=200 ! audio/x-raw,channels=2,rate=%s,depth=16 ! queue ! dvmux." % args.rate +
         " " +
         # -----------------------------------
         # Local Display ---------------------
         # -----------------------------------
         " " +
-        ["", "t. ! queue max-size-buffers=1 leaky=downstream ! ffmpegcolorspace ! xvimagesink"][args.display]
+        ["", "t. ! queue max-size-buffers=1 leaky=downstream ! videoconvert ! xvimagesink"][args.display]
         )
 
     cmdargs = {}
@@ -264,28 +264,28 @@ def launch_gstreamer():
 ###############################################################################
 def main():
     # Check that gstreamer cmd line tools are installed
-    check_command("gst-inspect-0.10", "gstreamer0.10-tools")
-    check_command("gst-launch-0.10", "gstreamer0.10-tools")
+    check_command("gst-inspect-1.0", "gstreamer1.0-tools")
+    check_command("gst-launch-1.0", "gstreamer1.0-tools")
     # Check if the gstreamer modules are installed
-    check_gst_module("v4l2src", "gstreamer0.10-plugins-good")
-    check_gst_module("decodebin2", "gstreamer0.10-plugins-base")
+    check_gst_module("v4l2src", "gstreamer1.0-plugins-good")
+    check_gst_module("decodebin", "gstreamer1.0-plugins-base")
 
-    check_gst_module("videotestsrc", "gstreamer0.10-plugins-base")
+    check_gst_module("videotestsrc", "gstreamer1.0-plugins-base")
 
-    check_gst_module("videoscale", "gstreamer0.10-plugins-base")
-    check_gst_module("videorate", "gstreamer0.10-plugins-base")
+    check_gst_module("videoscale", "gstreamer1.0-plugins-base")
+    check_gst_module("videorate", "gstreamer1.0-plugins-base")
 
-    check_gst_module("queue", "libgstreamer0.10-0")
-    check_gst_module("tee", "libgstreamer0.10-0")
+    check_gst_module("queue", "libgstreamer1.0-0")
+    check_gst_module("tee", "libgstreamer1.0-0")
 
-    check_gst_module("ffmpegcolorspace", "gstreamer0.10-ffmpeg")
-    check_gst_module("ffenc_dvvideo", "gstreamer0.10-ffmpeg")
-    check_gst_module("ffmux_dv", "gstreamer0.10-ffmpeg")
-    check_gst_module("dvswitchsink", "gstreamer0.10-dvswitch")
+    check_gst_module("videoconvert", "gstreamer1.0-ffmpeg")
+    check_gst_module("avenc_dvvideo", "gstreamer1.0-ffmpeg")
+    check_gst_module("avmux_dv", "gstreamer1.0-ffmpeg")
+    check_gst_module("dvswitchsink", "gstreamer1.0-dvswitch")
 
-    check_gst_module("audiotestsrc", "gstreamer0.10-plugins-base")
+    check_gst_module("audiotestsrc", "gstreamer1.0-plugins-base")
 
-    check_gst_module("xvimagesink", "gstreamer0.10-plugins-base")
+    check_gst_module("xvimagesink", "gstreamer1.0-plugins-base")
 
     # Check the input arguments make sense.
     if args.rate != "48000":
