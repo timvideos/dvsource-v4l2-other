@@ -158,13 +158,15 @@ def check_command(name, package=None):
             print "Please try 'sudo apt-get install %s'" % package
         raise
 
-def check_gst_module(name, package=None):
+def check_gst_module(name, package=None, extra_help=None):
     try:
         subprocess.check_call(["gst-inspect-1.0", name], stdout=subprocess.DEVNULL)
     except subprocess.CalledProcessError, e:
         print "Unable to find required gstreamer module", name
         if package:
             print "Please try 'sudo apt-get install %s'" % package
+        if extra_help:
+            print extra_help
         raise
 
 ###############################################################################
@@ -281,7 +283,11 @@ def main():
     check_gst_module("videoconvert", "gstreamer1.0-ffmpeg")
     check_gst_module("avenc_dvvideo", "gstreamer1.0-ffmpeg")
     check_gst_module("avmux_dv", "gstreamer1.0-ffmpeg")
-    check_gst_module("dvswitchsink", "gstreamer1.0-dvswitch")
+    check_gst_module("dvswitchsink", "gstreamer1.0-dvswitch", """
+If your distro doesn't ship the gstreamer1.0-dvswitch package you
+can find out more information in the README.md file or at
+https://github.com/timvideos/dvsource-v4l2-other#installing-the-gstreamer-dvswitch-plugin
+""")
 
     check_gst_module("audiotestsrc", "gstreamer1.0-plugins-base")
 
