@@ -206,13 +206,15 @@ def launch_gstreamer():
             "videoscale add-borders=1 ! video/x-raw,width=1280,height=720,pixel-aspect-ratio=\(fraction\)1/1 !",
         }[args.aspect] +
         " " +
+        # Pixel aspect ratio conversion is a bit hairy, see the following links for more information.
+        # http://forum.doom9.org/showthread.php?t=111102
+        # http://www.sciencemedianetwork.org/wiki/Tutorials/Video/Pixel_Aspect_Ratio
         {"ntsc-4:3": 
             # Convert to 4:3 with non-square pixels (was 10.0/11 ~= 0.91, now 8.0/9 ~= 0.88)
             "videoscale ! video/x-raw,width=720,height=480,pixel-aspect-ratio=\(fraction\)10/11 !",
          "ntsc-16:9": 
             # Convert to 4:3 with non-square pixels (was 40.0/33 ~= 1.21, now 32.0/27 ~= 1.19)
             "videoscale ! video/x-raw,width=720,height=480,pixel-aspect-ratio=\(fraction\)40/33 !",
-         # http://www.sciencemedianetwork.org/wiki/Tutorials/Video/Pixel_Aspect_Ratio
          "pal-4:3":
             # Convert to 4:3 with non-square pixels (was 59.0/54 ~= 1.09 == ITU-PAR, now 16.0/15 ~= 1.07 == NLE-PAR used by Final Cut / Adobe)
             "videoscale ! video/x-raw,width=720,height=576,pixel-aspect-ratio=\(fraction\)16/15 !",
