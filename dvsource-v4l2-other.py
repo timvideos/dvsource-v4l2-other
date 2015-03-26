@@ -280,9 +280,9 @@ def main():
     check_gst_module("queue", "libgstreamer1.0-0")
     check_gst_module("tee", "libgstreamer1.0-0")
 
-    check_gst_module("videoconvert", "gstreamer1.0-ffmpeg")
-    check_gst_module("avenc_dvvideo", "gstreamer1.0-ffmpeg")
-    check_gst_module("avmux_dv", "gstreamer1.0-ffmpeg")
+    check_gst_module("videoconvert", "gstreamer1.0-libav")
+    check_gst_module("avenc_dvvideo", "gstreamer1.0-libav")
+    check_gst_module("avmux_dv", "gstreamer1.0-libav")
     check_gst_module("dvswitchsink", "gstreamer1.0-dvswitch", """
 If your distro doesn't ship the gstreamer1.0-dvswitch package you
 can find out more information in the README.md file or at
@@ -339,9 +339,6 @@ https://github.com/timvideos/dvsource-v4l2-other#installing-the-gstreamer-dvswit
 		except Exception, e:
 		    print "Error killing gst-launch", e
 
-
-def get_parser():
-    return parser
 
 args = None
 if __name__ == "__main__":
