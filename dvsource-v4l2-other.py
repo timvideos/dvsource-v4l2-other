@@ -179,6 +179,10 @@ def launch_gstreamer():
 
     cmd = ("gst-launch-1.0" +
         " " +
+        {True: "-v",
+         False: ""
+        }[args.verbose] +
+        " " +
         # Video Pipeline --------------------
         # -----------------------------------
         {True:
