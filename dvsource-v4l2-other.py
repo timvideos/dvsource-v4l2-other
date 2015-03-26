@@ -207,17 +207,18 @@ def launch_gstreamer():
         }[args.aspect] +
         " " +
         {"ntsc-4:3": 
-            # Convert to 4:3 with non-square pixels
+            # Convert to 4:3 with non-square pixels (was 10.0/11 ~= 0.91, now 8.0/9 ~= 0.88)
             "videoscale ! video/x-raw,width=720,height=480,pixel-aspect-ratio=\(fraction\)10/11 !",
          "ntsc-16:9": 
-            # Convert to 4:3 with non-square pixels
+            # Convert to 4:3 with non-square pixels (was 40.0/33 ~= 1.21, now 32.0/27 ~= 1.19)
             "videoscale ! video/x-raw,width=720,height=480,pixel-aspect-ratio=\(fraction\)40/33 !",
+         # http://www.sciencemedianetwork.org/wiki/Tutorials/Video/Pixel_Aspect_Ratio
          "pal-4:3":
-            # Convert to 4:3 with non-square pixels
-            "videoscale ! video/x-raw,width=720,height=576,pixel-aspect-ratio=\(fraction\)59/54 !",
+            # Convert to 4:3 with non-square pixels (was 59.0/54 ~= 1.09 == ITU-PAR, now 16.0/15 ~= 1.07 == NLE-PAR used by Final Cut / Adobe)
+            "videoscale ! video/x-raw,width=720,height=576,pixel-aspect-ratio=\(fraction\)16/15 !",
          "pal-4:3":
-            # Convert to 4:3 with non-square pixels
-            "videoscale ! video/x-raw,width=720,height=576,pixel-aspect-ratio=\(fraction\)118/81 !",
+            # Convert to 4:3 with non-square pixels (was 118.0/81 ~= 1.46 == anamorphic 'ITU', now 64.0/45 ~= 1.42 == anamorphic 'NLE')
+            "videoscale ! video/x-raw,width=720,height=576,pixel-aspect-ratio=\(fraction\)64/45 !",
         }["%s-%s" % (args.system, args.aspect)] +
         " " +
         {"ntsc": 
