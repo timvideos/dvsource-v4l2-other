@@ -187,7 +187,7 @@ def launch_gstreamer():
         # -----------------------------------
         {True:
             # Read the v4l2 input and decode it if it's a mjpeg input
-            "v4l2src ! " +
+            "v4l2src device=%s ! " % args.device +
             args.caps +
             "decodebin ! ",
          False:
@@ -230,6 +230,10 @@ def launch_gstreamer():
             # Convert the framerate to 25fps
             "videorate ! video/x-raw,framerate=\(fraction\)25/1 !",
         }[args.system] +
+        " " +
+        # FIXME: Check which color space is needed by PAL verse NSTC.
+        # Convert to color space needed by dvswitch
+        "videoconvert ! video/x-raw,format=\(string\)I420 !" +
         " " +
         ["", "tee name=t ! "][args.display] +
         " " +
