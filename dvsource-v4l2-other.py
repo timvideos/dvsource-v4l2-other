@@ -231,6 +231,10 @@ def launch_gstreamer():
             "videorate ! video/x-raw,framerate=\(fraction\)25/1 !",
         }[args.system] +
         " " +
+        # FIXME: Check which color space is needed by PAL verse NSTC.
+        # Convert to color space needed by dvswitch
+        "videoconvert ! video/x-raw,format=\(string\)I420 !" +
+        " " +
         ["", "tee name=t ! "][args.display] +
         " " +
         "queue leaky=downstream max-size-buffers=1 ! " +
