@@ -84,7 +84,7 @@ parser.add_argument(
     help="Display the incoming video locally.")
 
 parser.add_argument(
-    "-3", "--c3voc", type=int, default=-1,
+    "-i", "--c3voc-source-id", type=int, default=-1,
     help="Connecting to a C3 VOC's custom dvswitch version with given source ID.")
 
 ###############################################################################
@@ -178,8 +178,8 @@ def check_gst_module(name, package=None, extra_help=None):
 ###############################################################################
 
 def launch_gstreamer():
-    if args.c3voc >= 0:
-        dvswitchsink_extra = " c3voc-mode=1 c3voc-source-id=%i " % args.c3voc
+    if args.c3voc_source_id >= 0:
+        dvswitchsink_extra = " c3voc-mode=1 c3voc-source-id=%i " % args.c3voc_source_id
     else:
         dvswitchsink_extra = ""
 
