@@ -83,6 +83,10 @@ parser.add_argument(
     "-x", "--display", action="store_true",
     help="Display the incoming video locally.")
 
+parser.add_argument(
+    "-3", "--c3voc", action="store_true",
+    help="Connecting to a C3 VOC's custom dvswitch version")
+
 ###############################################################################
 # dvswitch arguments and .dvswitchrc parsing
 ###############################################################################
@@ -174,6 +178,11 @@ def check_gst_module(name, package=None, extra_help=None):
 ###############################################################################
 
 def launch_gstreamer():
+    if args.c3voc:
+        dvswitchsink_extra = " c3voc-mode=1 c3voc-source-id=0 "
+    else:
+        dvswitchsink_extra = ""
+
     if args.caps:
         args.caps += " ! "
 
@@ -246,7 +255,7 @@ def launch_gstreamer():
         "videoconvert ! avenc_dvvideo ! avmux_dv name=dvmux !" +
         " " +
         # Output to dvswitch
-        "dvswitchsink host=%s port=%s" % (args.host, args.port) +
+        "dvswitchsink host=%s port=%s %s" % (args.host, args.port, dvswitchsink_extra) +
         " " +
         # -----------------------------------
         # Audio Pipeline --------------------
