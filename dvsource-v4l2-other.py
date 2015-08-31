@@ -232,9 +232,11 @@ def launch_gstreamer():
             "videorate ! video/x-raw,framerate=\(fraction\)25/1 !",
         }[args.system] +
         " " +
-        # FIXME: Check which color space is needed by PAL verse NSTC.
         # Convert to color space needed by dvswitch
-        "videoconvert ! video/x-raw,format=\(string\)I420 !" +
+        # For PAL, either I420 or Y41B works.
+        # For NTSC, only Y41B seems to work.
+        # Y42B doesn't seem supported by dvswitch at all.
+        "videoconvert ! video/x-raw,format=\(string\)Y41B !" +
         " " +
         ["", "tee name=t ! "][args.display] +
         " " +
