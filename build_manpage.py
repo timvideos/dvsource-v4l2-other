@@ -48,7 +48,7 @@ class build_manpage(Command):
                                       self._today.strftime('%Y\\-%m\\-%d')))
         description = self.distribution.get_description()
         if description:
-            name = self._markup('%s - %s' % (self._markup(appname),
+            name = self._markup('%s - %s' % (appname,
                                              description.splitlines()[0]))
         else:
             name = self._markup(appname)
@@ -59,7 +59,7 @@ class build_manpage(Command):
             ret.append('.SH SYNOPSIS\n.B %s\n%s\n' % (self._markup(appname),
                                                       synopsis))
         long_desc = self.distribution.get_long_description()
-        if long_desc:
+        if long_desc and long_desc != "UNKNOWN":
             ret.append('.SH DESCRIPTION\n%s\n' % self._markup(long_desc))
         return ''.join(ret)
 

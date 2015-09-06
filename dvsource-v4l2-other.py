@@ -23,7 +23,7 @@ subprocess.DEVNULL = file(os.devnull, "rw+")
 # Argument parsing
 ###############################################################################
 
-parser = argparse.ArgumentParser(add_help=False)
+parser = argparse.ArgumentParser(prog='dvsource-v4l2-other', add_help=False)
 parser.add_argument(
     "-d", "--device", default="/dev/video0",
     help="Video4Linux device to read the input from.")
