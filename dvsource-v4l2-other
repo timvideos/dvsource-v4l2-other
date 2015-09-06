@@ -125,60 +125,34 @@ def create_fifo():
 
 
 def launch_gstreamer(fifoname):
-    cmd = ("gst-launch-0.10" +
-        " " +
-        {True:
-            # Read the v4l2 input and decode it if it's a mjpeg input
-            "v4l2src ! decodebin2 !",
-         False:
-          "videotestsrc is-live=true pattern=%s !" % fake_types[args.fake],
-        }[args.fake == None] +
-        " " +
-        # Allow at most 1ms of data to be in the buffer, 2=GST_QUEUE_LEAK_DOWNSTREAM
-        "queue leaky=2 max-size-buffers=5 ! " +
-        " " +
-        # Convert to 4:3 format by adding borders if needed
-        {"4:3":
-            # Convert to 4:3 format by adding borders if needed
-            "videoscale add-borders=1 ! video/x-raw-yuv,width=1024,height=768,pixel-aspect-ratio=\(fraction\)1/1 !",
-         "16:9":
-            # Convert to 16:9 format by adding borders if needed
-            "videoscale add-borders=1 ! video/x-raw-yuv,width=1280,height=720,pixel-aspect-ratio=\(fraction\)1/1 !",
-        }[args.aspect] +
-        " " +
-        "queue ! " +
-        " " +
-        {"ntsc-4:3": 
-            # Convert to 4:3 with non-square pixels
-            "videoscale ! video/x-raw-yuv,width=720,height=480,pixel-aspect-ratio=\(fraction\)10/11 !",
-         "ntsc-16:9": 
-            # Convert to 4:3 with non-square pixels
-            "videoscale ! video/x-raw-yuv,width=720,height=480,pixel-aspect-ratio=\(fraction\)40/33 !",
-         "pal-4:3":
-            # Convert to 4:3 with non-square pixels
-            "videoscale ! video/x-raw-yuv,width=720,height=576,pixel-aspect-ratio=\(fraction\)59/54 !",
-         "pal-4:3":
-            # Convert to 4:3 with non-square pixels
-            "videoscale ! video/x-raw-yuv,width=720,height=576,pixel-aspect-ratio=\(fraction\)118/81 !",
-        }["%s-%s" % (args.format, args.aspect)] +
-        " " +
-        "queue ! " +
-        " " +
-        {"ntsc": 
-            # Convert the framerate to 30fps
-            "videorate ! video/x-raw-yuv,framerate=\(fraction\)30000/1001 !",
-         "pal":
-            # Convert the framerate to 25fps
-            "videorate ! video/x-raw-yuv,framerate=\(fraction\)25/1 !",
-        }[args.format] +
-        " " +
-        # Convert to DV format
-        "ffmpegcolorspace ! ffenc_dvvideo ! ffmux_dv !" +
-        " " +
-        "queue ! " +
-        " " +
-        # Output to the fifo
-        "filesink location=" + fifoname)
+
+    """\
+gst-launch-0.10 -v \
+  dvswitchsrc hostname=130.216.0.151 port=1234 \
+  ! dvdemux name=demux \
+  \
+  demux. \
+  ! queue \
+  ! dvdec \
+  ! ffmpegcolorspace \
+  ! x264enc \
+    bitrate=2000 key-int-max=60 bframes=0 \
+    byte-stream=false aud=true tune=zerolatency \
+  ! h264parse \
+  ! "video/x-h264,profile=main" \
+  ! mux. \
+  \
+  demux. \
+  ! queue \
+  ! audioconvert \
+  ! voaacenc bitrate=128000 \
+  ! mux. \
+  \
+  flvmux streamable=true name=mux \
+  ! rtmpsink location="rtmp://a.rtmp.youtube.com/live2/x/$AUTH app=live2"
+
+
+    """
 
     cmdargs = {}
     if args.verbose:
