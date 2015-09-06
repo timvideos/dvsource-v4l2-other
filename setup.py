@@ -4,7 +4,7 @@ from distutils.core import setup
 from build_manpage import build_manpage
 
 setup(name='dvsource-v4l2-other',
-      version='1.0',
+      version='0.1.0',
       description='Video4Linux2 source which supports any input format for DVswitch',
       author="Tim 'mithro' Ansell",
       author_email='mithro@mithis.com',
