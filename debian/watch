@@ -1,0 +1,4 @@
+version=3
+
+opts="filenamemangle=s/(?:.*?)?v?(\d[\d.]*)\.tar\.gz/dvsource-v4l2-other-$1.tar.gz/" \
+https://github.com/timvideos/dvsource-v4l2-other/tags (?:.*?/)?v?(\d[\d.]*)\.tar\.gz

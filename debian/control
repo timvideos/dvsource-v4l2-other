@@ -1,0 +1,16 @@
+Source: dvsource-v4l2-other
+Section: video
+Priority: optional
+Maintainer: Stefano Rivera <stefanor@debian.org>
+Uploaders: Tim Videos Team <timvideos@googlegroups.com>
+Build-Depends: debhelper (>= 9), python, dh-exec
+Standards-Version: 3.9.6
+Homepage: https://github.com/timvideos/dvsource-v4l2-other
+Vcs-Git: https://github.com/timvideos/dvsource-v4l2-other
+Vcs-Browser: https://github.com/timvideos/dvsource-v4l2-other
+
+Package: dvsource-v4l2-other
+Architecture: all
+Depends: ${misc:Depends}, python, gstreamer1.0-dvswitch
+Description: v4l2 source for DVswitch
+ Video4Linux2 source for DVswitch which supports any UVC Webcam device.

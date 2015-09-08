@@ -1,0 +1,2 @@
+#!/usr/bin/dh-exec
+dvsource-v4l2-other.py => /usr/bin/dvsource-v4l2-other

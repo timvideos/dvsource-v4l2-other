@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	python setup.py build_manpage \
+	       --output=dvsource-v4l2-other.1 \
+	       --parser=dvsource-v4l2-other:get_parser
+
+override_dh_auto_install:
