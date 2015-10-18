@@ -11,6 +11,7 @@ Vcs-Browser: https://github.com/timvideos/dvsource-v4l2-other
 
 Package: dvsource-v4l2-other
 Architecture: all
-Depends: ${misc:Depends}, python, gstreamer1.0-dvswitch
+Depends: ${misc:Depends}, python, gstreamer1.0-dvswitch, gst-inspect-1.0, gstreamer1.0-libav, gstreamer1.0-plugins-base, gstreamer1.0-plugins-good, libgstreamer1.0-0
 Description: v4l2 source for DVswitch
  Video4Linux2 source for DVswitch which supports any UVC Webcam device.
+libgstreamer1.0-0
