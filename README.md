@@ -9,6 +9,15 @@ dvswitch --host=localhost --port=2000 &
 ./dvsource-v4l2-other --device=/dev/video0 --host=localhost --port=2000
 ```
 
+#### Quick Start with MJPEG Devices (such as HDMI2USB.tv)
+
+Due to limited USB2.0 bandwidth, many Video4Linux devices support both a low frame rate "raw mode" and a high frame rate "mjpeg mode". By default dvsource-v4l2-other will pick the raw mode, to force it to use the mjpeg mode you need to use the `--caps` command line as follows;
+
+```
+dvswitch --host=localhost --port=2000 &
+./dvsource-v4l2-other --device=/dev/video0 --host=localhost --port=2000 --caps="image/jpeg,width=1280,height=720"
+```
+
 ## Dependencies
 
  * gstreamer-1.2.4 (including, base, good and libav plugins)
