@@ -217,7 +217,7 @@ def launch_gstreamer():
             "videoscale ! video/x-raw,width=720,height=480,pixel-aspect-ratio=\(fraction\)32/27 !",
          "pal-4:3":
             # Convert to 4:3 with non-square pixels (was 59.0/54 ~= 1.09 == ITU-PAR, now 16.0/15 ~= 1.07 == NLE-PAR used by Final Cut / Adobe)
-            # I420 == works, Y41B == works, but has artefacts, Y42B == not working
+            # I420 == works, Y41B == works but has artifacts, Y42B == not working
             "videoscale ! video/x-raw,width=720,height=576,pixel-aspect-ratio=\(fraction\)16/15 !",
          "pal-16:9":
             # Convert to 16:9 with non-square pixels (was 118.0/81 ~= 1.46 == anamorphic 'ITU', now 64.0/45 ~= 1.42 == anamorphic 'NLE')
@@ -233,7 +233,7 @@ def launch_gstreamer():
         }[args.system] +
         " " +
         # Convert to color space needed by dvswitch
-        # For PAL, I420 works and Y41B works but has artefacts.
+        # For PAL, I420 works and Y41B works but has artifacts.
         # For NTSC, only Y41B seems to work.
         # Y42B doesn't seem supported by dvswitch at all.
         "videoconvert ! video/x-raw,format=\(string\)" +
