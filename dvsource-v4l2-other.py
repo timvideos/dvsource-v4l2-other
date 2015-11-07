@@ -9,12 +9,9 @@ dvsource-v4l2-other - Video4Linux2 source for DVswitch which supports any device
 """
 
 import argparse
-import atexit
 import os
-import tempfile
 import time
 import subprocess
-import shutil
 
 subprocess.DEVNULL = file(os.devnull, "rw+")
 
@@ -104,14 +101,12 @@ def parse_dvswitchrc(configfile):
 
 
 def get_dvswitchrc():
-    import shlex
-    from os import path
-    configs = [path.expanduser("~"), ".", "/etc"]
+    configs = [os.path.expanduser("~"), ".", "/etc"]
 
     actual_config = {}
     for dirname in configs:
-        configfile = path.join(dirname, ".dvswitchrc")
-        if path.exists(configfile):
+        configfile = os.path.join(dirname, ".dvswitchrc")
+        if os.path.exists(configfile):
             actual_config.update(parse_dvswitchrc(configfile))
 
     if actual_config.get("MIXER_HOST", None) == "0.0.0.0":
